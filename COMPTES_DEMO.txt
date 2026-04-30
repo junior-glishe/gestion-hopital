@@ -1,0 +1,13 @@
+=== COMPTES DE DÉMONSTRATION ===
+
+⚠ ÉTAPE OBLIGATOIRE après import du SQL :
+    Visitez UNE FOIS l'URL : index.php?p=connexion/seed
+    → Cela génère les vrais hashes des mots de passe ci-dessous.
+
+Administrateur : admin@hopital.com       / admin123
+Médecin        : dr.kpossou@hopital.com  / medecin123
+Infirmier      : inf.glele@hopital.com   / infirmier123
+Patient        : patient@test.com        / patient123
+
+⚠ Sur le formulaire de connexion, choisissez le BON RÔLE
+  (email + rôle doivent correspondre).

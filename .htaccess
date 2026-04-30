@@ -1,0 +1,10 @@
+# Active la réécriture sur Apache pour avoir des URLs propres (optionnel)
+RewriteEngine On
+
+# Empêche l'accès direct aux dossiers sensibles
+RewriteRule ^(app|core|config|sql)/ - [F,L]
+
+# Tout passe par index.php (sauf fichiers/dossiers existants)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

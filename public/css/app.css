@@ -1,0 +1,3 @@
+/* Styles globaux additionnels.
+   Tailwind est déjà chargé via CDN dans le layout principal. */
+body { -webkit-font-smoothing: antialiased; }

@@ -1,0 +1,57 @@
+<?php include __DIR__ . '/../partials/flash.php'; ?>
+<?php $titre = "Mot de passe oublié - MediTrace"; ob_start(); ?>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .input-focus:focus {
+      outline: none;
+      border-color: #0d6b4e;
+      box-shadow: 0 0 0 3px rgba(13, 107, 78, 0.1);
+    }
+  </style>
+
+
+  <div class="max-w-md mx-auto px-4">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <div class="text-center mb-8">
+        <div class="flex justify-center mb-3">
+          <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0d6b4e" stroke-width="1.8">
+              <path d="M3 21H21" stroke-linecap="round"/>
+              <path d="M5 21V7C5 5.9 5.9 5 7 5H17C18.1 5 19 5.9 19 7V21" stroke-linecap="round"/>
+              <path d="M9 21V15H15V21" stroke-linecap="round"/>
+              <path d="M9 11H10" stroke-linecap="round"/>
+              <path d="M14 11H15" stroke-linecap="round"/>
+              <path d="M9 8H10" stroke-linecap="round"/>
+              <path d="M14 8H15" stroke-linecap="round"/>
+              <rect x="11" y="2" width="2" height="3" rx="1"/>
+            </svg>
+          </div>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800">Mot de passe <span class="text-green-700">oublié ?</span></h1>
+        <p class="text-gray-500 text-sm mt-1">Entrez votre email pour réinitialiser votre mot de passe</p>
+      </div>
+
+      <form action="" method="POST">
+<?php /* CSRF */ ?><input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES) ?>">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Adresse email *</label>
+          <input type="email" name="email" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl input-focus transition" placeholder="exemple@hopital.com">
+        </div>
+
+        <div class="mt-8">
+          <button type="submit" class="w-full py-3 bg-green-700 text-white rounded-xl font-medium hover:bg-green-800 transition cursor-pointer">
+            Envoyer le lien
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-6">
+        <p class="text-sm text-gray-500">
+          <a href="index.php?p=connexion/login" class="text-green-700 hover:underline">← Retour à la connexion</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+<?php $contenu = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>
