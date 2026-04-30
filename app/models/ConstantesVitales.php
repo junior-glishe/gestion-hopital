@@ -1,11 +1,25 @@
 <?php
-class ConstantesVitales extends Model {
-    public function listerPourPatient(int $patientId): array {
+class ConstantesVitales extends Model
+{
+    public function listerPourPatient(int $patientId): array
+    {
         $st = $this->db->prepare("SELECT * FROM constantes_vitales WHERE patient_id = :p ORDER BY date_mesure DESC");
         $st->execute([':p' => $patientId]);
         return $st->fetchAll();
     }
-    public function ajouter(array $d): int {
+    public function listerRecentes(int $limit = 5): array
+    {
+        return $this->db->query("SELECT cv.*, p.nom AS patient_nom, p.prenom AS patient_prenom 
+            FROM constantes_vitales cv 
+            LEFT JOIN patients p ON p.id = cv.patient_id 
+            ORDER BY cv.date_mesure DESC LIMIT " . (int)$limit)->fetchAll();
+    }
+    public function compter(): int
+    {
+        return (int) $this->db->query("SELECT COUNT(*) FROM constantes_vitales")->fetchColumn();
+    }
+    public function ajouter(array $d): int
+    {
         $sql = "INSERT INTO constantes_vitales
                   (patient_id, infirmier_id, temperature, tension_systole, tension_diastole,
                    pouls, saturation, glycemie, poids, respiratoire, observations)

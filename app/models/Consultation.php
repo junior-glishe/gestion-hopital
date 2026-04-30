@@ -1,17 +1,27 @@
 <?php
-class Consultation extends Model {
-    public function lister(): array {
+class Consultation extends Model
+{
+    public function lister(): array
+    {
         $sql = "SELECT c.*, p.nom AS patient_nom, p.prenom AS patient_prenom
                 FROM consultations c LEFT JOIN patients p ON p.id = c.patient_id
                 ORDER BY c.date_consultation DESC";
         return $this->db->query($sql)->fetchAll();
     }
-    public function listerPourPatient(int $patientId): array {
+    public function listerRecentes(int $limit = 5): array
+    {
+        return $this->db->query("SELECT c.*, p.nom AS patient_nom, p.prenom AS patient_prenom
+                FROM consultations c LEFT JOIN patients p ON p.id = c.patient_id
+                ORDER BY c.date_consultation DESC LIMIT " . (int)$limit)->fetchAll();
+    }
+    public function listerPourPatient(int $patientId): array
+    {
         $st = $this->db->prepare("SELECT * FROM consultations WHERE patient_id = :p ORDER BY date_consultation DESC");
         $st->execute([':p' => $patientId]);
         return $st->fetchAll();
     }
-    public function ajouter(array $d): int {
+    public function ajouter(array $d): int
+    {
         $sql = "INSERT INTO consultations (patient_id, medecin_id, type_diagnostic, diagnostic, observations)
                 VALUES (:p, :m, :td, :diag, :obs)";
         $st = $this->db->prepare($sql);

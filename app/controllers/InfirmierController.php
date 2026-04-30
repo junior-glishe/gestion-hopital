@@ -7,26 +7,65 @@ require_once __DIR__ . '/../models/Urgence.php';
 require_once __DIR__ . '/../models/Hospitalisation.php';
 require_once __DIR__ . '/../models/Chambre.php';
 
-class InfirmierController extends Controller {
+class InfirmierController extends Controller
+{
 
-    private function gate(): void { $this->requireRole('infirmier'); }
-    private function infirmierId(): ?int {
+    private function gate(): void
+    {
+        $this->requireRole('infirmier');
+    }
+    private function infirmierId(): ?int
+    {
         $email = $_SESSION['user']['email'] ?? null;
         if (!$email) return null;
         $p = (new Personnel())->trouverParEmail($email);
         return $p ? (int)$p['id'] : null;
     }
 
-    public function dashboard(): void {
+    public function dashboard(): void
+    {
         $this->gate();
         $patients = (new Patient())->lister();
-        $this->render('infirmier/dashboard', ['patients' => $patients]);
+
+        // Infos infirmier connecté
+        $infirmierId = $this->infirmierId();
+        $infirmier = $infirmierId ? (new Personnel())->trouver($infirmierId) : null;
+        $nomComplet = $infirmier ? trim($infirmier['prenom'] . ' ' . $infirmier['nom']) : ($_SESSION['user']['nom'] ?? 'Infirmier');
+        $service = $infirmier['service'] ?? 'Soins généraux';
+
+        // Statistiques
+        $nbPatients = count($patients);
+        $nbConstantes = (new ConstantesVitales())->compter();
+        $nbSoins = (new Soin())->compter();
+        $nbUrgences = (new Urgence())->compterEnAttente();
+
+        // Dernières constantes vitales
+        $dernieresConstantes = (new ConstantesVitales())->listerRecentes(5);
+
+        // Dernières urgences
+        $dernieresUrgences = (new Urgence())->listerRecentes(5);
+
+        $this->render('infirmier/dashboard', compact(
+            'patients',
+            'nomComplet',
+            'service',
+            'infirmier',
+            'nbPatients',
+            'nbConstantes',
+            'nbSoins',
+            'nbUrgences',
+            'dernieresConstantes',
+            'dernieresUrgences'
+        ));
     }
 
-    public function accueillir_patient(): void {
+    public function accueillir_patient(): void
+    {
         $this->gate();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$this->checkCsrf()) { $this->redirect('infirmier/accueillir_patient'); }
+            if (!$this->checkCsrf()) {
+                $this->redirect('infirmier/accueillir_patient');
+            }
             try {
                 // L'infirmier "accueille" → on enregistre l'admission en hospitalisation
                 $hid = (new Hospitalisation())->ajouter([
@@ -49,13 +88,16 @@ class InfirmierController extends Controller {
         $patients = (new Patient())->lister();
         $medecins = (new Personnel())->listerMedecins();
         $chambres = (new Chambre())->listerLibres();
-        $this->render('infirmier/accueillir_patient', compact('patients','medecins','chambres'));
+        $this->render('infirmier/accueillir_patient', compact('patients', 'medecins', 'chambres'));
     }
 
-    public function constantes_vitales(): void {
+    public function constantes_vitales(): void
+    {
         $this->gate();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$this->checkCsrf()) { $this->redirect('infirmier/constantes_vitales'); }
+            if (!$this->checkCsrf()) {
+                $this->redirect('infirmier/constantes_vitales');
+            }
             try {
                 $_POST['infirmier_id'] = $this->infirmierId();
                 $id = (new ConstantesVitales())->ajouter($_POST);
@@ -69,10 +111,13 @@ class InfirmierController extends Controller {
         $this->render('infirmier/constantes_vitales', compact('patients'));
     }
 
-    public function soins_surveillance(): void {
+    public function soins_surveillance(): void
+    {
         $this->gate();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$this->checkCsrf()) { $this->redirect('infirmier/soins_surveillance'); }
+            if (!$this->checkCsrf()) {
+                $this->redirect('infirmier/soins_surveillance');
+            }
             try {
                 $_POST['infirmier_id'] = $this->infirmierId();
                 $id = (new Soin())->ajouter($_POST);
@@ -86,10 +131,13 @@ class InfirmierController extends Controller {
         $this->render('infirmier/soins_surveillance', compact('patients'));
     }
 
-    public function signalement_urgence(): void {
+    public function signalement_urgence(): void
+    {
         $this->gate();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$this->checkCsrf()) { $this->redirect('infirmier/signalement_urgence'); }
+            if (!$this->checkCsrf()) {
+                $this->redirect('infirmier/signalement_urgence');
+            }
             try {
                 $_POST['infirmier_id'] = $this->infirmierId();
                 $id = (new Urgence())->ajouter($_POST);
@@ -101,6 +149,6 @@ class InfirmierController extends Controller {
         }
         $patients = (new Patient())->lister();
         $medecins = (new Personnel())->listerMedecins();
-        $this->render('infirmier/signalement_urgence', compact('patients','medecins'));
+        $this->render('infirmier/signalement_urgence', compact('patients', 'medecins'));
     }
 }
