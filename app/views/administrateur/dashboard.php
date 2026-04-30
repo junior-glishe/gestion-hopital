@@ -114,6 +114,16 @@ ob_start(); ?>
         <span>Gérer personnel</span>
       </a>
 
+      <p class="text-xs text-gray-400 uppercase tracking-wide mb-3 mt-4 px-3">Administration</p>
+
+      <a href="index.php?p=administrateur/gerer_acces" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 mb-1">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" />
+          <path d="M3 21V19C3 15.6863 5.68629 13 9 13H15C18.3137 13 21 15.6863 21 19V21" />
+        </svg>
+        <span>Gérer accès</span>
+      </a>
+
       <p class="text-xs text-gray-400 uppercase tracking-wide mb-3 mt-4 px-3">Planification</p>
 
       <a href="index.php?p=administrateur/planifier_rendezvous" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 mb-1">

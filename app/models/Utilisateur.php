@@ -1,7 +1,9 @@
 <?php
-class Utilisateur extends Model {
+class Utilisateur extends Model
+{
 
-    public function verifierConnexion(string $email, string $password, string $role): ?array {
+    public function verifierConnexion(string $email, string $password, string $role): ?array
+    {
         $sql = "SELECT id, nom, email, mot_de_passe, role
                 FROM utilisateurs
                 WHERE email = :email AND role = :role
@@ -16,13 +18,21 @@ class Utilisateur extends Model {
         return null;
     }
 
-    public function trouverParEmail(string $email): ?array {
+    public function trouverParEmail(string $email): ?array
+    {
         $stmt = $this->db->prepare("SELECT * FROM utilisateurs WHERE email = :e LIMIT 1");
         $stmt->execute([':e' => $email]);
         return $stmt->fetch() ?: null;
     }
 
-    public function creer(string $nom, string $email, string $password, string $role): int {
+    public function lister(): array
+    {
+        $stmt = $this->db->query("SELECT id, nom, email, role, cree_le FROM utilisateurs ORDER BY id DESC");
+        return $stmt->fetchAll();
+    }
+
+    public function creer(string $nom, string $email, string $password, string $role): int
+    {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $sql = "INSERT INTO utilisateurs (nom, email, mot_de_passe, role)
                 VALUES (:nom, :email, :mdp, :role)";
@@ -31,9 +41,16 @@ class Utilisateur extends Model {
         return (int) $this->db->lastInsertId();
     }
 
-    public function majMotDePasse(int $id, string $newPassword): bool {
+    public function supprimer(int $id): bool
+    {
+        return (bool) $this->db->prepare("DELETE FROM utilisateurs WHERE id = :id")
+            ->execute([':id' => $id]);
+    }
+
+    public function majMotDePasse(int $id, string $newPassword): bool
+    {
         $hash = password_hash($newPassword, PASSWORD_DEFAULT);
         return $this->db->prepare("UPDATE utilisateurs SET mot_de_passe = :p WHERE id = :id")
-                        ->execute([':p' => $hash, ':id' => $id]);
+            ->execute([':p' => $hash, ':id' => $id]);
     }
 }

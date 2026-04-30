@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Patient.php';
 require_once __DIR__ . '/../models/Personnel.php';
+require_once __DIR__ . '/../models/Utilisateur.php';
 require_once __DIR__ . '/../models/Facture.php';
 require_once __DIR__ . '/../models/Paiement.php';
 require_once __DIR__ . '/../models/RendezVous.php';
@@ -19,8 +20,8 @@ class AdministrateurController extends Controller
         $this->gate();
 
         // Informations administrator connecté
-        $userId = (int)($_SESSION['user']['id'] ?? 0);
-        $utilisateur = $userId ? (new Personnel())->trouver($userId) : null;
+        $email = $_SESSION['user']['email'] ?? null;
+        $utilisateur = $email ? (new Personnel())->trouverParEmail($email) : null;
         $nomComplet = $utilisateur ? trim($utilisateur['prenom'] . ' ' . $utilisateur['nom']) : ($_SESSION['user']['nom'] ?? 'Administrateur');
 
         // Statistiques
@@ -63,6 +64,12 @@ class AdministrateurController extends Controller
     public function gerer_personnel(): void
     {
         $this->gate();
+
+        // Informations admin connecté
+        $userId = (int)($_SESSION['user']['id'] ?? 0);
+        $utilisateur = $userId ? (new Personnel())->trouver($userId) : null;
+        $nomComplet = $utilisateur ? trim($utilisateur['prenom'] . ' ' . $utilisateur['nom']) : ($_SESSION['user']['nom'] ?? 'Administrateur');
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$this->checkCsrf()) {
                 $this->redirect('administrateur/gerer_personnel');
@@ -82,7 +89,10 @@ class AdministrateurController extends Controller
             $this->redirect('administrateur/gerer_personnel');
         }
         $personnels = (new Personnel())->lister();
-        $this->render('administrateur/gerer_personnel', ['personnels' => $personnels]);
+        $this->render('administrateur/gerer_personnel', [
+            'personnels' => $personnels,
+            'nomComplet' => $nomComplet
+        ]);
     }
 
     public function planifier_rendezvous(): void
@@ -180,5 +190,72 @@ class AdministrateurController extends Controller
             'total'      => (new Facture())->totalMontant(),
         ];
         $this->render('administrateur/statistiques', ['stats' => $stats]);
+    }
+
+    private function roleValide(string $role): bool
+    {
+        return in_array($role, ['administrateur', 'medecin', 'infirmier', 'patient'], true);
+    }
+
+    public function gerer_acces(): void
+    {
+        $this->gate();
+
+        // Infos admin connecté (pour le titre/affichage)
+        $userId = (int)($_SESSION['user']['id'] ?? 0);
+        $email = $_SESSION['user']['email'] ?? null;
+        $utilisateur = $email ? (new Personnel())->trouverParEmail($email) : null;
+        $nomComplet = $utilisateur
+            ? trim(($utilisateur['prenom'] ?? '') . ' ' . ($utilisateur['nom'] ?? ''))
+            : ($_SESSION['user']['nom'] ?? 'Administrateur');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$this->checkCsrf()) {
+                $this->redirect('administrateur/gerer_acces');
+            }
+
+            // Suppression
+            if (!empty($_POST['_delete'])) {
+                $id = (int)$_POST['_delete'];
+
+                if ($id > 0) {
+                    if ($id === $userId) {
+                        $this->flash("❌ Action refusée : vous ne pouvez pas supprimer votre propre compte.", 'error');
+                        $this->redirect('administrateur/gerer_acces');
+                    }
+
+                    (new Utilisateur())->supprimer($id);
+                    $this->flash("✅ Compte utilisateur supprimé.", 'success');
+                }
+                $this->redirect('administrateur/gerer_acces');
+            }
+
+            // Création
+            $nom = trim($_POST['nom'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['mot_de_passe'] ?? '';
+            $role = trim($_POST['role'] ?? '');
+
+            if ($nom === '' || $email === '' || $password === '' || !$this->roleValide($role)) {
+                $this->flash("❌ Champs invalides (nom/email/mot de passe/role).", 'error');
+                $this->redirect('administrateur/gerer_acces');
+            }
+
+            try {
+                (new Utilisateur())->creer($nom, $email, $password, $role);
+                $this->flash("✅ Compte créé avec succès.", 'success');
+            } catch (Throwable $e) {
+                $this->flash("❌ Erreur : " . $e->getMessage(), 'error');
+            }
+
+            $this->redirect('administrateur/gerer_acces');
+        }
+
+        $utilisateurs = (new Utilisateur())->lister();
+        $this->render('administrateur/gerer_acces', [
+            'utilisateurs' => $utilisateurs,
+            'nomComplet' => $nomComplet,
+            'currentUserId' => $userId,
+        ]);
     }
 }
