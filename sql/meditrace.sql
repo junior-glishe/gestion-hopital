@@ -294,7 +294,7 @@ INSERT INTO personnel (nom, prenom, fonction, service, email) VALUES
  ('Glele',   'Adjoa',     'Infirmière', 'Urgences',    'inf.glele@hopital.com');
 
 INSERT INTO chambres (numero, type, capacite, occupee) VALUES
- ('101', 'Standard', 2, 0),
- ('102', 'Standard', 2, 1),
- ('201', 'VIP',      1, 0),
- ('202', 'VIP',      1, 0);
+ ('101', 'Standard', 10, 0),
+ ('102', 'Standard', 10, 1),
+ ('201', 'VIP',      9, 0),
+ ('202', 'VIP',      9, 0);
